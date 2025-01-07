@@ -18,8 +18,8 @@ public class UserService {
     return userRepository.findAll();
   }
 
-  public User getUserByName(String name) {
-    return userRepository.findByName(name)
+  public User getUserByName(String username) {
+    return userRepository.findByName(username)
       .orElseThrow(() -> new RuntimeException("User not found"));
   }
 

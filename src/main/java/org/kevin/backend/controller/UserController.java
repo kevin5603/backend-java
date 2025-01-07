@@ -34,10 +34,10 @@ public class UserController {
       .body(users);
   }
 
-  @GetMapping("/{userName}")
-  public ResponseEntity<User> getUserByName(@PathVariable("userName") String userName) {
-    System.out.println("find user by name: " + userName);
-    User user = userService.getUserByName(userName);
+  @GetMapping("/search/{username}")
+  public ResponseEntity<User> getUserByName(@PathVariable("username") String name) {
+    System.out.println("find user by name: " + name);
+    User user = userService.getUserByName(name);
     return ResponseEntity
       .status(HttpStatus.OK)
       .body(user);
@@ -52,12 +52,12 @@ public class UserController {
       .build();
   }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity removeUser(@PathVariable Long id) {
-    System.out.println("remove user by id: " + id);
-    userService.removeUser(id);
+  @DeleteMapping("/{userId}")
+  public ResponseEntity removeUser(@PathVariable Long userId) {
+    System.out.println("remove user by id: " + userId);
+    userService.removeUser(userId);
     return ResponseEntity
-      .status(HttpStatus.OK)
+      .status(HttpStatus.NO_CONTENT)
       .build();
   }
 
@@ -67,6 +67,5 @@ public class UserController {
       .status(HttpStatus.BAD_REQUEST)
       .body("found exception: " + ex.getMessage());
   }
-
 
 }
