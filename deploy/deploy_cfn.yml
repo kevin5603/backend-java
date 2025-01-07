@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sample SAM Template for ptt crawler lambda & API endpoint
+Globals:
+  Function:
+    Timeout: 20
+    MemorySize: 512
+Parameters:
+  s3BucketName:
+    Type: String
+    Default: react-demo-5603
+Resources:
+  WebApp:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri:
+        Bucket: !Sub "${s3BucketName}"
+        Key: target/backend-0.0.1-SNAPSHOT-lambda-package.zip
+      Handler: org.kevin.backend.aws.StreamLambdaHandler::handleRequest
+      Runtime: java21
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Environment:
+        Variables:
+          JAVA_TOOL_OPTIONS: '--add-opens=java.management/sun.management=ALL-UNNAMED'
+      Role: !GetAtt ExecutionLambdaRole.Arn
+      Timeout: 120
+      Events:
+        FindAll:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: GET
+        FindByName:
+          Type: Api
+          Properties:
+            Path: /users/search/{username}
+            Method: GET
+        CreateUser:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: POST
+        RemoveUser:
+          Type: Api
+          Properties:
+            Path: /users/{user_id}
+            Method: DELETE
+  ExecutionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: [ 'sts:AssumeRole' ]
+            Effect: 'Allow'
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: CodePipelineAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - 'lambda:*'
+                Effect: Allow
+                Resource: '*'
+        - PolicyName: DynamoDbAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - 'dynamodb:*'
+                Effect: Allow
+                Resource: '*'
+        - PolicyName: AWSLambdaCloudWatch
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'logs:CreateLogGroup'
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:us-west-2:975049910219:log-group:/aws/lambda/*'
+Outputs:
+  FindAll:
+    Description: "API Gateway endpoint URL for Prod stage for Ptt Crawler function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/users"
